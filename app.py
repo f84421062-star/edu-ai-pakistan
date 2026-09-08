@@ -3,25 +3,39 @@ from google import genai
 from google.genai import types
 import os
 
-# 1. Dashboard Layout & Visual Appearance
+# 1. Page Configuration & Custom Styling Forcing Clear Black Text Input
 st.set_page_config(page_title="Omni AI Hub", page_icon="⚡", layout="wide")
 
+# CSS to make the app background a bright, clean white-gray and force all input text to be black
 st.markdown("""
     <style>
-    .stApp { background-color: #0b0f19; color: #e4e6eb; }
-    div[data-testid="stSidebar"] { background-color: #111827; }
-    .stButton button { background-color: #3b82f6 !important; color: white !important; border-radius: 8px !important; }
+    .stApp {
+        background-color: #f0f2f6 !important;
+        color: #000000 !important;
+    }
+    input, textarea, select {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 2px solid #3b82f6 !important;
+        font-weight: bold !important;
+    }
+    p, h1, h2, h3, span, label {
+        color: #111827 !important;
+    }
+    .stTab button p {
+        color: #111827 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # 2. Secure Cloud Core AI Client Setup
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-# 3. App Header & Statistics
-st.markdown("<h1 style='color: #60a5fa; text-align: center;'>⚡ OmniAI Ultimate Hub</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #9ca3af;'>The All-in-One Global AI Dashboard with Zero Restrictions</p>", unsafe_allow_html=True)
+# 3. Custom Stylized AI Logo and Header Layout
+st.markdown("<h2 style='text-align: center;'>🛡️🤖⚡ CYBER-SHIELD OMNI-AI</h2>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; font-weight: bold;'>The All-in-One Global AI Dashboard — Light Mode Edition</p>", unsafe_allow_html=True)
 
-# 4. Five Core Feature Modes Navigation Tabs
+# 4. Five Navigation Tabs
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "💬 Universal Chat", 
     "💻 Code Scripter", 
@@ -30,22 +44,20 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🧠 Brain Quiz Maker"
 ])
 
-# MODE 1: Universal Anything Assistant
+# MODE 1: Universal Chat
 with tab1:
     st.subheader("🤖 Universal Omni-Chat Assistant")
-    st.caption("Ask me absolutely anything: from video games to recipes, advice, storytelling, or complex life questions.")
-    user_prompt = st.text_area("What is on your mind?", placeholder="Type anything here...", key="omni_chat")
+    user_prompt = st.text_area("What is on your mind?", placeholder="Type your query here...", key="omni_chat")
     if st.button("Ask Omni Engine"):
         if user_prompt:
             with st.spinner("AI thinking..."):
                 response = client.models.generate_content(model='gemini-3.6-flash', contents=user_prompt)
                 st.write(response.text)
 
-# MODE 2: Code Scripter & File Compiler
+# MODE 2: Code Scripter
 with tab2:
     st.subheader("💻 AI Code Builder & Download Hub")
-    st.caption("Enter what program you want. The AI writes the raw code and compiles a downloadable file instantly.")
-    code_request = st.text_input("What script do you want to build? (e.g., Build a Python snake game):")
+    code_request = st.text_input("What script do you want to build? (e.g., Python calculator):")
     file_ext = st.selectbox("Select File Extension Format:", [".py", ".html", ".js", ".css", ".cs", ".txt"])
     if st.button("Compile Code Script"):
         if code_request:
@@ -62,36 +74,33 @@ with tab2:
                     data=generated_script, file_name=f"AI_Generated_Script{file_ext}", mime="text/plain"
                 )
 
-# MODE 3: Book Summarizer & Data Cruncher
+# MODE 3: Book Summarizer
 with tab3:
     st.subheader("📄 Dynamic Document & Text Book Summarizer")
-    st.caption("Paste long articles, chapters, or textbook data below to get instant main-bullet executive breakdowns.")
-    long_text = st.text_area("Paste walls of text or book chapters here:", height=150)
+    long_text = st.text_area("Paste walls of text or book chapters here:", height=150, key="summary_input")
     if st.button("Extract Deep Summary"):
         if long_text:
-            with st.spinner("Scanning and reading documents..."):
-                sum_prompt = f"Provide a clean, bulleted executive summary highlighting key definitions and actionable takeaways from this text:\n{long_text}"
+            with st.spinner("Scanning documents..."):
+                sum_prompt = f"Provide a clean, bulleted executive summary highlighting key definitions from this text:\n{long_text}"
                 response = client.models.generate_content(model='gemini-3.6-flash', contents=sum_prompt)
                 st.write(response.text)
 
-# MODE 4: Universal Language Polyglot Translator
+# MODE 4: Language Translator
 with tab4:
     st.subheader("🌐 High-Fidelity Language Translator")
-    st.caption("Translate expressions or full homework paragraphs perfectly across global and regional languages.")
     text_to_translate = st.text_input("Enter text content to translate:")
-    target_lang = st.selectbox("Select Target Language:", ["Urdu (اردو)", "English", "Arabic (العربية)", "Spanish", "Chinese", "French"])
+    target_lang = st.selectbox("Select Target Language:", ["Urdu", "English", "Arabic", "Spanish", "French"])
     if st.button("Translate Text"):
         if text_to_translate:
             with st.spinner("Processing translations..."):
-                trans_prompt = f"Translate the following text into {target_lang} natively and write out pronunciation hints if helpful:\n{text_to_translate}"
+                trans_prompt = f"Translate the following text into {target_lang}:\n{text_to_translate}"
                 response = client.models.generate_content(model='gemini-3.6-flash', contents=trans_prompt)
                 st.write(response.text)
 
-# MODE 5: Interactive Brain Quiz & Test Prep Engine
+# MODE 5: Interactive Brain Quiz
 with tab5:
     st.subheader("🧠 Automatic Dynamic Pop-Quiz Prep")
-    st.caption("Instantly generate customized competitive exam or classroom tests for any topic to gauge mastery.")
-    quiz_subject = st.text_input("Enter exam topic for testing (e.g., World War 2, Organic Chemistry):")
+    quiz_subject = st.text_input("Enter topic for testing (e.g., Photosynthesis):")
     if st.button("Generate Exam Blueprint"):
         if quiz_subject:
             with st.spinner("Compiling academic evaluations..."):
