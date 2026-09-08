@@ -44,8 +44,8 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🧠 Brain Quiz Maker"
 ])
 
-# STABLE MODEL SELECTOR BACKUP TARGET
-MODEL_TARGET = 'gemini-2.5-flash'  # Changed from 3.6 to stable 2.5 to fix the ClientError block
+# MANDATORY MODEL FOR API ACCESS
+MODEL_TARGET = 'gemini-3.6-flash'
 
 # MODE 1: Universal Chat
 with tab1:
@@ -58,7 +58,8 @@ with tab1:
                     response = client.models.generate_content(model=MODEL_TARGET, contents=user_prompt)
                     st.write(response.text)
                 except Exception as e:
-                    st.error(f"Engine connection block: {e}. Please double check your Streamlit Secrets Key!")
+                    st.error("🔑 API Key Error! Your current API key is blocked or invalid.")
+                    st.info("💡 Fix: Go to aistudio.google.com, make a brand new API key, and paste it into your Streamlit Settings -> Secrets vault panel.")
 
 # MODE 2: Code Scripter
 with tab2:
@@ -81,7 +82,7 @@ with tab2:
                         data=generated_script, file_name=f"AI_Generated_Script{file_ext}", mime="text/plain"
                     )
                 except Exception as e:
-                    st.error(f"Error compiling script: {e}")
+                    st.error("🔑 API Key Error! Unable to generate script. Refresh your key in Streamlit Secrets.")
 
 # MODE 3: Book Summarizer
 with tab3:
@@ -95,7 +96,7 @@ with tab3:
                     response = client.models.generate_content(model=MODEL_TARGET, contents=sum_prompt)
                     st.write(response.text)
                 except Exception as e:
-                    st.error(f"Error running summarizer: {e}")
+                    st.error("🔑 API Key Error! Summarization blocked. Check your Streamlit Secrets vault setup.")
 
 # MODE 4: Language Translator
 with tab4:
@@ -110,7 +111,7 @@ with tab4:
                     response = client.models.generate_content(model=MODEL_TARGET, contents=trans_prompt)
                     st.write(response.text)
                 except Exception as e:
-                    st.error(f"Translation Error: {e}")
+                    st.error("🔑 API Key Error! Translation blocked. Update your secret key string.")
 
 # MODE 5: Interactive Brain Quiz
 with tab5:
@@ -121,7 +122,7 @@ with tab5:
             with st.spinner("Compiling academic evaluations..."):
                 quiz_prompt = f"Create a rigorous 3-question multiple choice evaluation quiz regarding {quiz_subject}. Provide a clearly marked answer key at the very bottom."
                 try:
-                    response = client.models.generate_content(model=MODEL_TARGET, contents=quiz_prompt)
+                    response = client.models.generate_content(model=MODEL_TARGET, contents=quiz_subject)
                     st.write(response.text)
                 except Exception as e:
-                    st.error(f"Quiz Generation Error: {e}")
+                    st.error("🔑 API Key Error! Quiz builder blocked. Update your secret token credentials.")
