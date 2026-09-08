@@ -1,8 +1,7 @@
 import streamlit as st
-import pandas as pd
 from datetime import datetime
 
-# 1. Page Configuration & Custom Theme Layout
+# 1. Page Configuration & Professional Light Theme Style
 st.set_page_config(page_title="FBISE Result Tracker", page_icon="🎓", layout="centered")
 
 st.markdown("""
@@ -11,14 +10,22 @@ st.markdown("""
         background-color: #f8fafc !important;
         color: #0f172a !important;
     }
-    input, select {
+    input, select, textarea {
         background-color: #ffffff !important;
         color: #000000 !important;
         border: 2px solid #1e3a8a !important;
         font-weight: bold !important;
     }
-    h1, h2, h3, label {
+    h1, h2, h3, label, p {
         color: #1e3a8a !important;
+    }
+    .chat-bubble-user {
+        background-color: #e0f2fe;
+        padding: 10px;
+        border-radius: 10px;
+        color: #0369a1;
+        margin: 5px 0;
+        font-weight: bold;
     }
     .status-box {
         background-color: #eff6ff;
@@ -31,68 +38,82 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. Main Title Banner Heading
+# 2. Page Headers
 st.markdown("<h2 style='text-align: center;'>🏛️ FBISE Automated Result Tracker</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; font-weight: bold;'>Federal Board of Intermediate and Secondary Education, Islamabad</p>", unsafe_allow_html=True)
 
-# 3. Status Board Alert Box
+# 3. Status Alert Information Box
 st.markdown("""
 <div class='status-box'>
-    <strong>ℹ️ Current System Status:</strong><br>
-    The official FBISE servers are currently processing candidate records. Enter your roll slip credentials below. 
-    The portal is armed to automatically query the central database when the annual board gazette releases.
+    <strong>ℹ️ Live System Status:</strong><br>
+    Locker is online. Use the testing simulation module below to verify live text capturing logs.
 </div>
 """, unsafe_allow_html=True)
 
-# 4. Interactive Input Registration Panel Form
-with st.form("roll_slip_form"):
-    st.subheader("📋 Enter Roll Number Slip Credentials")
-    
-    roll_no = st.text_input("Enter Roll Number:", placeholder="e.g., 154320", max_chars=8)
-    
-    exam_class = st.selectbox("Select Your Examination Class:", [
-        "SSC-I (Class 9 - Matric Tech)",
-        "SSC-II (Class 10 - Matric Tech)",
-        "HSSC-I (Class 11 - Intermediate)",
-        "HSSC-II (Class 12 - Intermediate)"
-    ])
-    
-    submit_button = st.form_submit_button("🔒 Secure & Register Credentials")
+# 4. Interactive Class & Roll Number Setup
+st.subheader("📋 Step 1: Candidate Account Setup")
+roll_no = st.text_input("Enter Student Roll Number:", placeholder="e.g., 584321", max_chars=8)
+exam_class = st.selectbox("Select Your Examination Class Tier:", [
+    "SSC-I (Class 9)", "SSC-II (Class 10)", "HSSC-I (Class 11)", "HSSC-II (Class 12)"
+])
 
-# 5. Application Processing Automation Logic Loop
-if submit_button:
-    if roll_no.strip() == "":
-        st.warning("⚠️ Action Required: Please input a valid candidate Roll Number to arm the tracker system.")
-    else:
-        st.success(f"✅ Credentials Saved! Roll No: [{roll_no}] has been registered for the {exam_class} database track.")
-        
-        # Build out a clean structured log data report block to act as your "Current Chat Capture State Log"
-        timestamp_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        capture_report = f"""==================================================
-        📷 TRACKER SYSTEM CHAT CAPTURE LOG REPORT
+st.markdown("---")
+
+# 5. Live Simulation Chat Box Component
+st.subheader("💬 Step 2: Live Chat Testing Module")
+st.write("Type some test messages below to build up a chat history context.")
+
+# Initialize a simple session memory loop list to store test chats
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [
+        {"sender": "System", "text": "FBISE automation engine initialized. Waiting for test signals..."}
+    ]
+
+# Form to send a message safely into history state
+with st.form("chat_input_form", clear_on_submit=True):
+    new_msg = st.text_input("Type a message to add to the chat thread:")
+    send_btn = st.form_submit_button("💬 Send to Thread")
+    if send_btn and new_msg:
+        st.session_state.chat_history.append({"sender": "User", "text": new_msg})
+
+# Print out the current conversation logs layout screen
+st.write("**Current Live Chat Stream:**")
+for msg in st.session_state.chat_history:
+    st.markdown(f"<div class='chat-bubble-user'><b>[{msg['sender']}]:</b> {msg['text']}</div>", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# 6. The Snapshot Capture Generator Machinery
+st.subheader("📷 Step 3: Compile Live Chat Screenshot")
+st.write("Clicking the button below takes a text-capture screenshot of everything written above!")
+
+if st.button("📸 Take Chat Live Screenshot"):
+    timestamp_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # Compile all lines of chat log array cleanly into a single file string
+    chat_snapshot_text = f"""==================================================
+📷 LIVE INTERFACE CHAT SCREENSHOT REPORT LOG
 ==================================================
-[Timestamp]: {timestamp_now}
-[Target Institute]: FBISE Islamabad Portal
-[Registered Class]: {exam_class}
-[Candidate Roll No]: {roll_no}
-[System Security Route]: Encrypted Google Cloud Vault
+[Timestamp Captured]: {timestamp_str}
+[Target Portal Site]: FBISE Islamabad Automated Track
+[Current Roll No]   : {roll_no if roll_no else 'Not Specified'}
+[Target Class Tier] : {exam_class}
 --------------------------------------------------
-[Current Status]: Monitoring Active. 
-Waiting for FBISE Webhook result release declaration. 
-Once announced, the engine will query portal endpoints 
-and capture the raw grading sheet sheet automatically.
-=================================================="""
-
-        st.markdown("---")
-        st.subheader("📷 Current Interface Text Capture Preview")
-        st.text(capture_report)
+📜 CONVERSATION THREAD RECORD ENTRIES:
+"""
+    for msg in st.session_state.chat_history:
+        chat_snapshot_text += f"\n👉 [{msg['sender']}]: {msg['text']}"
         
-        # 📥 PROVIDE THE DOWNLOADABLE FILE CAPTURE ASSETS
-        st.download_button(
-            label="💾 Download Log Text Data File",
-            data=capture_report,
-            file_name=f"FBISE_Tracker_Log_{roll_no}.txt",
-            mime="text/plain"
-        )
-        st.info("🏆 Click the save button above to compile and keep this screenshot report verification reference directly on your local device!")
+    chat_snapshot_text += "\n=================================================="
+    
+    # Display the final compiled capture blueprint matrix text on screen
+    st.success("🎉 Chat interface snapshot successfully compiled into file storage format!")
+    st.text(chat_snapshot_text)
+    
+    # 📥 GENERATE THE CLICKABLE ASSET FILE DOWNLOAD TRIGGER BUTTON
+    st.download_button(
+        label="📥 Download Chat Screenshot File (.txt)",
+        data=chat_snapshot_text,
+        file_name=f"Chat_Screenshot_Log_{roll_no if roll_no else 'Test'}.txt",
+        mime="text/plain"
+    )
