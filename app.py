@@ -44,6 +44,9 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🧠 Brain Quiz Maker"
 ])
 
+# STABLE MODEL SELECTOR BACKUP TARGET
+MODEL_TARGET = 'gemini-2.5-flash'  # Changed from 3.6 to stable 2.5 to fix the ClientError block
+
 # MODE 1: Universal Chat
 with tab1:
     st.subheader("🤖 Universal Omni-Chat Assistant")
@@ -51,8 +54,11 @@ with tab1:
     if st.button("Ask Omni Engine"):
         if user_prompt:
             with st.spinner("AI thinking..."):
-                response = client.models.generate_content(model='gemini-3.6-flash', contents=user_prompt)
-                st.write(response.text)
+                try:
+                    response = client.models.generate_content(model=MODEL_TARGET, contents=user_prompt)
+                    st.write(response.text)
+                except Exception as e:
+                    st.error(f"Engine connection block: {e}. Please double check your Streamlit Secrets Key!")
 
 # MODE 2: Code Scripter
 with tab2:
@@ -63,16 +69,19 @@ with tab2:
         if code_request:
             with st.spinner("Writing raw programming scripts..."):
                 sys_rule = "You are an expert coder. Return ONLY clean working script files. No talk, no explanations."
-                response = client.models.generate_content(
-                    model='gemini-3.6-flash', contents=code_request,
-                    config=types.GenerateContentConfig(system_instruction=sys_rule, temperature=0.2)
-                )
-                generated_script = response.text
-                st.code(generated_script, language="python")
-                st.download_button(
-                    label=f"📥 Download Compiled {file_ext} File",
-                    data=generated_script, file_name=f"AI_Generated_Script{file_ext}", mime="text/plain"
-                )
+                try:
+                    response = client.models.generate_content(
+                        model=MODEL_TARGET, contents=code_request,
+                        config=types.GenerateContentConfig(system_instruction=sys_rule, temperature=0.2)
+                    )
+                    generated_script = response.text
+                    st.code(generated_script, language="python")
+                    st.download_button(
+                        label=f"📥 Download Compiled {file_ext} File",
+                        data=generated_script, file_name=f"AI_Generated_Script{file_ext}", mime="text/plain"
+                    )
+                except Exception as e:
+                    st.error(f"Error compiling script: {e}")
 
 # MODE 3: Book Summarizer
 with tab3:
@@ -82,8 +91,11 @@ with tab3:
         if long_text:
             with st.spinner("Scanning documents..."):
                 sum_prompt = f"Provide a clean, bulleted executive summary highlighting key definitions from this text:\n{long_text}"
-                response = client.models.generate_content(model='gemini-3.6-flash', contents=sum_prompt)
-                st.write(response.text)
+                try:
+                    response = client.models.generate_content(model=MODEL_TARGET, contents=sum_prompt)
+                    st.write(response.text)
+                except Exception as e:
+                    st.error(f"Error running summarizer: {e}")
 
 # MODE 4: Language Translator
 with tab4:
@@ -94,8 +106,11 @@ with tab4:
         if text_to_translate:
             with st.spinner("Processing translations..."):
                 trans_prompt = f"Translate the following text into {target_lang}:\n{text_to_translate}"
-                response = client.models.generate_content(model='gemini-3.6-flash', contents=trans_prompt)
-                st.write(response.text)
+                try:
+                    response = client.models.generate_content(model=MODEL_TARGET, contents=trans_prompt)
+                    st.write(response.text)
+                except Exception as e:
+                    st.error(f"Translation Error: {e}")
 
 # MODE 5: Interactive Brain Quiz
 with tab5:
@@ -105,5 +120,8 @@ with tab5:
         if quiz_subject:
             with st.spinner("Compiling academic evaluations..."):
                 quiz_prompt = f"Create a rigorous 3-question multiple choice evaluation quiz regarding {quiz_subject}. Provide a clearly marked answer key at the very bottom."
-                response = client.models.generate_content(model='gemini-3.6-flash', contents=quiz_prompt)
-                st.write(response.text)
+                try:
+                    response = client.models.generate_content(model=MODEL_TARGET, contents=quiz_prompt)
+                    st.write(response.text)
+                except Exception as e:
+                    st.error(f"Quiz Generation Error: {e}")
