@@ -3,98 +3,74 @@ from google import genai
 from google.genai import types
 import os
 
-# 1. Page Configuration & Aesthetic Setup
-st.set_page_config(page_title="EduAI Pakistan", page_icon="📚", layout="centered")
+# 1. Sleek Modern Layout (Gemini style)
+st.set_page_config(page_title="Gemini Clone", page_icon="✨", layout="wide")
 
-st.title("📚 EduAI - Global Academic Assistant")
-st.caption("100% of all premium tier subscriptions are automatically routed directly to local education charities.")
+# Inject custom Gemini dark/light style adjustments using Markdown CSS
+st.markdown("""
+    <style>
+    .stApp {
+        background-color: #131314;
+        color: #e3e3e3;
+    }
+    div[data-testid="stSidebar"] {
+        background-color: #1e1f20;
+    }
+    .stTextInput input {
+        background-color: #282a2d !important;
+        color: white !important;
+        border-radius: 20px !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# 2. Core Configurations (Reads securely from your Streamlit settings secrets vault)
-# Make sure you have added GEMINI_API_KEY = "your_key" inside Streamlit App Settings -> Secrets!
+# 2. Secure Client Setup
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-# Strict Education-Only Filter Instruction
-EDUCATION_GUARDRAIL = """
-You are a strict Educational AI. You know all academic books on the internet.
-Your absolute only purpose is to assist users with academic knowledge, books, science, history, and math.
-CRITICAL RULE: If the user asks about video games, movies, gossip, casual chat, or non-educational topics, you MUST reply exactly with: 
-"I am an AI dedicated exclusively to education. Please ask an academic or book-related question."
-"""
+# 3. Sidebar (Just like the real Gemini sidebar layout)
+st.sidebar.title("✨ Gemini Pro")
+st.sidebar.button("➕ New chat", use_container_width=True)
+st.sidebar.markdown("---")
+st.sidebar.caption("🕒 Recent Activity")
+st.sidebar.text_area("Chat History", "• How to build an app...\n• Python help...", height=100, disabled=True)
 
-# 3. Sidebar Control Interface & Promo Counter
-st.sidebar.header("⚙️ User Dashboard")
-user_tier = st.sidebar.selectbox("Select Your Account Tier", ["Free", "Basic", "Middle", "Premium"])
+# 4. Main Chat Interface Headings
+st.markdown("<h1 style='color: #4285F4;'>Hello, Developer</h1>", unsafe_allow_html=True)
+st.markdown("<h3 style='color: #80868b;'>How can I help you today?</h3>", unsafe_allow_html=True)
+st.caption("Ask me anything! From coding algorithms to video game builds, creative screenplays, or casual conversations.")
 
-# Simulated Promo Tracking Variable (Bypasses gates if under 10,000)
-total_users = 4501
-max_promo = 10000
+# 5. Maintaining Live Chat Memory State
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-if total_users < max_promo:
-    st.sidebar.success(f"🎉 10K Promo Active! You are User #{total_users}")
-else:
-    st.sidebar.info("💡 Standard Tiers Active")
+# Print existing historical messages cleanly as chat bubbles
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.write(message["content"])
 
-# 4. Interactive Feature Selector Tabs Layout
-tab1, tab2, tab3 = st.tabs(["💬 Ask AI", "📝 Generate Quiz", "📍 Find Study Spaces"])
+# 6. Bottom Input Box (Matches the Gemini text bar input layout)
+user_input = st.chat_input("Ask Gemini...")
 
-# TAB 1: Academic Q&A (Available on Free Tier)
-with tab1:
-    st.subheader("Ask any Academic or Book-Related Question")
-    user_query = st.text_input("Enter your homework or book topic (e.g., Explain Newton's laws):", key="query")
-    if st.button("Submit Question"):
-        if user_query:
-            with st.spinner("AI scanning textbooks..."):
-                try:
-                    response = client.models.generate_content(
-                        model='gemini-3.6-flash',
-                        contents=user_query,
-                        config=types.GenerateContentConfig(
-                            system_instruction=EDUCATION_GUARDRAIL,
-                            temperature=0.2
-                        )
+if user_input:
+    # Append the user's fresh message to the screen memory state
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    with st.chat_message("user"):
+        st.write(user_input)
+
+    # Reach out to Google Cloud AI engine without ANY strict filters or blockers
+    with st.chat_message("assistant"):
+        with st.spinner("Thinking..."):
+            try:
+                response = client.models.generate_content(
+                    model='gemini-3.6-flash',
+                    contents=user_input,
+                    config=types.GenerateContentConfig(
+                        temperature=0.7 # High creativity value allows standard natural speech
                     )
-                    st.write(response.text)
-                except Exception as e:
-                    st.error(f"Engine Connection Error: Make sure your secrets key is active. Details: {e}")
-
-# TAB 2: Quiz Generator (Requires Middle/Premium Tier OR Promo Activation)
-with tab2:
-    st.subheader("🧠 Automatic Study Quiz Maker")
-    quiz_topic = st.text_input("Enter quiz topic (e.g., Photosynthesis):", key="quiz")
-    
-    if st.button("Generate My Quiz"):
-        if quiz_topic:
-            # Check permissions or promo bypass rule
-            if user_tier in ["Middle", "Premium"] or total_users < max_promo:
-                if total_users < max_promo and user_tier == "Free":
-                    st.info("📢 Promotion applied! Bypassing standard Middle Tier lock for Rs. 0.")
-                with st.spinner("Compiling test questions..."):
-                    try:
-                        prompt = f"Create a 3-question multiple-choice quiz about '{quiz_topic}'. Include answers below clearly."
-                        response = client.models.generate_content(
-                            model='gemini-3.6-flash',
-                            contents=prompt,
-                            config=types.GenerateContentConfig(
-                                system_instruction=EDUCATION_GUARDRAIL,
-                                temperature=0.4
-                            )
-                        )
-                        st.write(response.text)
-                    except Exception as e:
-                        st.error(f"Engine Connection Error: {e}")
-            else:
-                st.error("❌ Locked Feature! Interactive quizzes require a Middle Tier donation subscription (1,000 PKR).")
-                st.info("💡 The first 10,000 free promotion slots are currently active, update your tier or reload profile status settings.")
-
-# TAB 3: Geographic Study Zone Finder (Requires Basic/Middle/Premium Tier OR Promo Activation)
-with tab3:
-    st.subheader("🗺️ Plot Local Study Locations")
-    city_input = st.text_input("Enter your city name in Pakistan (e.g., Rawalpindi):")
-    if st.button("Map Locations"):
-        if city_input:
-            if user_tier in ["Basic", "Middle", "Premium"] or total_users < max_promo:
-                if total_users < max_promo and user_tier == "Free":
-                    st.info("📢 Promotion applied! Bypassing standard Basic Tier lock for Rs. 0.")
-                st.success(f"📍 Map successfully pinned for {city_input}! Showing public library locations and student resource hubs within 5km.")
-            else:
-                st.error("❌ Locked Feature! Location plotting requires a Basic Tier donation subscription (500 PKR).")
+                )
+                model_reply = response.text
+                st.write(model_reply)
+                # Save assistant response to state memory loop
+                st.session_state.messages.append({"role": "assistant", "content": model_reply})
+            except Exception as e:
+                st.error(f"Error communicating with AI engine: {e}")
